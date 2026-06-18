@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Tracker</title>
+<style>
+  :root {
+    --ink: #16302b;
+    --paper: #f7f5ef;
+    --line: #d8d2c2;
+    --accent: #2d6a4f;
+    --warn: #b3261e;
+    --warnbg: #fbe9e7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--ink); padding: 16px; }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  h1 { color: var(--paper); font-size: 1.4rem; margin: 4px 0 18px; }
+  h1 span { color: #e9c46a; }
+  .card { background: var(--paper); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+  label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--ink); margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 1rem; background: #fff; }
+  .form-row { display: grid; grid-template-columns: 1fr 90px; gap: 8px; }
+  button { border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+  .add-btn { width: 100%; background: var(--accent); color: #fff; padding: 12px; margin-top: 10px; font-size: 0.95rem; }
+  .item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .item:last-child { border-bottom: none; }
+  .item-name { font-weight: 600; }
+  .item-stock { font-size: 0.85rem; color: #555; }
+  .low { color: var(--warn); font-weight: 700; }
+  .item-actions button {
+    width: 32px; height: 32px; font-size: 1.1rem; background: #eef0ec; color: var(--ink); margin-left: 4px;
+  }
+  .item-actions .minus { background: var(--warnbg); color: var(--warn); }
+  .empty { color: #94a89f; text-align: center; padding: 20px 0; font-size: 0.9rem; }
+  .threshold-note { color: #94a89f; font-size: 0.75rem; margin-top: -6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Stock<span>Book</span></h1>
+
+  <div class="card">
+    <label>Item Name</label>
+    <input id="itemName" placeholder="e.g. Cooking Oil 1L">
+    <div class="form-row">
+      <div>
+        <label>Starting Qty</label>
+        <input id="itemQty" type="number" min="0" placeholder="0">
+      </div>
+      <div>
+        <label>Low Alert At</label>
+        <input id="itemThreshold" type="number" min="0" placeholder="5">
+      </div>
+    </div>
+    <button class="add-btn" onclick="addItem()">Add to Stock List</button>
+  </div>
+
+  <div class="card">
+    <label style="margin-top:0;">Current Stock</label>
+    <p class="threshold-note">Tap − when you sell something, + when new stock arrives.</p>
+    <div id="itemList"></div>
+  </div>
+</div>
+
+<script>
+let items = [];
+
+async function loadItems() {
+  try {
+    const result = await window.storage.get('stock-items');
+    items = result ? JSON.parse(result.value) : [];
+  } catch (e) {
+    items = [];
+  }
+  render();
+}
+
+async function saveItems() {
+  try {
+    await window.storage.set('stock-items', JSON.stringify(items));
+  } catch (e) {
+    console.error('Could not save:', e);
+  }
+}
+
+function addItem() {
+  const name = document.getElementById('itemName').value.trim();
+  const qty = parseInt(document.getElementById('itemQty').value) || 0;
+  const threshold = parseInt(document.getElementById('itemThreshold').value) || 5;
+  if (!name) return;
+
+  items.push({ id: Date.now(), name, qty, threshold });
+  document.getElementById('itemName').value = '';
+  document.getElementById('itemQty').value = '';
+  document.getElementById('itemThreshold').value = '';
+  saveItems();
+  render();
+}
+
+function adjustQty(id, delta) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(0, item.qty + delta);
+  saveItems();
+  render();
+}
+
+function removeItem(id) {
+  items = items.filter(i => i.id !== id);
+  saveItems();
+  render();
+}
+
+function render() {
+  const list = document.getElementById('itemList');
+  if (items.length === 0) {
+    list.innerHTML = '<p class="empty">No items yet. Add your first one above.</p>';
+    return;
+  }
+  list.innerHTML = items.map(i => `
+    <div class="item">
+      <div>
+        <div class="item-name">${i.name}</div>
+        <div class="item-stock ${i.qty <= i.threshold ? 'low' : ''}">
+          ${i.qty} in stock ${i.qty <= i.threshold ? '— LOW STOCK' : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="minus" onclick="adjustQty(${i.id}, -1)">−</button>
+        <button onclick="adjustQty(${i.id}, 1)">+</button>
+        <button onclick="removeItem(${i.id})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+loadItems();
+</script>
+</body>
+</html>
