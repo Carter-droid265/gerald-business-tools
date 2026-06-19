@@ -1,0 +1,43 @@
+{
+  "id": "/gerald-business-tools/receipt_generator.html",
+  "name": "Receipt Builder",
+  "short_name": "Receipts",
+  "description": "Generate professional receipts for your business and share them instantly on WhatsApp",
+  "start_url": "/gerald-business-tools/receipt_generator.html",
+  "scope": "/gerald-business-tools/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#16302b",
+  "theme_color": "#16302b",
+  "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/gerald-business-tools/receipt-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/gerald-business-tools/receipt-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/gerald-business-tools/receipt-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/gerald-business-tools/receipt-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": []
+}
